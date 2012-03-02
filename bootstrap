@@ -20,15 +20,6 @@ PUPPET_PACKAGES="
   puppet-el_2.7.11-1_all.deb
 "
 APT_OPTIONS='-q -y'
-GITHUB_REPO="https://github.com/mikerenfro/puppetmaster-bootstrap"
-
-function extract_from_github()
-{
-    if [ ! -f puppetmaster-bootstrap.tgz ]; then
-	wget -O puppetmaster-bootstrap.tgz ${GITHUB_REPO}/tarball/master
-	tar --strip-components=1 -zxvpf puppetmaster-bootstrap.tgz
-    fi
-}
 
 function add_backports_repository()
 {
@@ -113,14 +104,10 @@ BASEDIR=`dirname $0`
 FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
-#FUNCTION_LIST="
-#	extract_from_github
-#	add_backports_repository install_dependencies configure_nginx
-#	install_puppet configure_mysql configure_puppetmaster
-#	restart_nginx_puppetmaster create_minimal_manifest test_puppet_client
-#	"
 FUNCTION_LIST="
-	extract_from_github
+	add_backports_repository install_dependencies configure_nginx
+	install_puppet configure_mysql configure_puppetmaster
+	restart_nginx_puppetmaster create_minimal_manifest test_puppet_client
 	"
 for name in ${FUNCTION_LIST}; do
   echo === Running ${name}\(\) ===
