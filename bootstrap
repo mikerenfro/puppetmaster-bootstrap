@@ -1,0 +1,116 @@
+#!/bin/bash
+DEBIAN_RELEASE="squeeze"
+BACKPORTS_REPO="http://backports.debian.org/debian-backports"
+PUPPET_DEPENDS="
+  ruby1.8 libxmlrpc-ruby libopenssl-ruby libshadow-ruby1.8
+  libaugeas-ruby1.8 adduser facter lsb-base sysv-rc
+"
+PUPPET_RECOMMENDS="
+  lsb-release debconf-utils
+"
+OTHER_DEPENDS="
+  mongrel nginx-light pwgen xemacs21
+  mysql-server libactiverecord-ruby1.8 libmysql-ruby1.8
+"
+PUPPET_PACKAGES="
+  puppet_2.7.11-1_all.deb
+  puppet-common_2.7.11-1_all.deb
+  puppetmaster_2.7.11-1_all.deb
+  puppetmaster-common_2.7.11-1_all.deb
+  puppet-el_2.7.11-1_all.deb
+"
+APT_OPTIONS='-q -y'
+
+function add_backports_repository()
+{
+# Add backports for nginx and other packages if needed
+    grep -q backports.debian.org /etc/apt/sources.list || \
+	echo "deb ${BACKPORTS_REPO} ${DEBIAN_RELEASE}-backports main" \
+	>> /etc/apt/sources.list
+    apt-get -q update > /dev/null
+}
+
+function install_dependencies()
+{
+# Install required packages interactively, so mysql-server can
+# prompt for a root password
+    apt-get ${APT_OPTIONS} install ${PUPPET_DEPENDS} ${PUPPET_RECOMMENDS} \
+	${OTHER_DEPENDS}
+}
+
+function configure_nginx()
+{
+# Make an nginx site for puppetmaster
+    cp nginx-site /etc/nginx/sites-available/puppetmaster
+    ln -s /etc/nginx/sites-available/puppetmaster /etc/nginx/sites-enabled/
+    perl -pi.bak -E "s/__FQDN__/${FQDN}/g" /etc/nginx/sites-available/puppetmaster
+}
+
+function install_puppet()
+{
+# Install puppet packages
+    dpkg -i ${PUPPET_PACKAGES}
+    /etc/init.d/puppetmaster stop
+}
+
+function configure_mysql()
+{
+# Configure mysql for storeconfigs
+    PUPPET_MYSQL_PASSWORD=`pwgen -s 8 1`
+    echo Enter mysql root password below to create puppet database:
+    mysqladmin -v -u root -p create puppet
+    echo
+    echo Enter mysql root password below to grant privileges to puppet user:
+    echo grant all privileges on puppet.\* to puppet@localhost identified \
+	by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
+}
+
+function configure_puppetmaster()
+{
+# Create puppet.conf, including storeconfigs support
+    cp puppet.conf /etc/puppet/puppet.conf
+    perl -pi.bak \
+	-e "s/__PASSWORD__/${PUPPET_MYSQL_PASSWORD}/g;s/__FQDN__/${FQDN}/g" \
+	/etc/puppet/puppet.conf
+    mkdir /etc/puppet/plugins
+# Create /etc/default/puppetmaster
+    cp puppetmaster.default /etc/default/puppetmaster
+}
+
+function restart_nginx_puppetmaster()
+{
+# Restarting nginx and puppetmaster
+    /etc/init.d/nginx stop
+    /etc/init.d/puppetmaster stop
+    /etc/init.d/nginx start
+    /etc/init.d/puppetmaster start
+}
+
+function create_minimal_manifest()
+{
+# Finishing up minimal puppet manifests
+    mkdir -p /etc/puppet/manifests/dev
+    if [ ! -f /etc/puppet/manifests/dev/site-dev.pp ]; then
+	echo 'node default {}' > /etc/puppet/manifests/dev/site-dev.pp
+    fi
+}
+
+function test_puppet_client()
+{
+    puppetd -vt
+}
+
+BASEDIR=`dirname $0`
+FQDN=`hostname --fqdn`
+
+cd ${BASEDIR}
+FUNCTION_LIST="
+	add_backports_repository install_dependencies configure_nginx
+	install_puppet configure_mysql configure_puppetmaster
+	restart_nginx_puppetmaster create_minimal_manifest test_puppet_client
+	"
+for name in ${FUNCTION_LIST}; do
+  echo === Running ${name}\(\) ===
+  ${name}
+  echo
+done

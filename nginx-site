@@ -1,0 +1,69 @@
+    upstream puppet-production {
+        server 127.0.0.1:18140;
+        server 127.0.0.1:18141;
+        server 127.0.0.1:18142;
+        server 127.0.0.1:18143;
+    }
+
+    server {
+        listen            8140;
+        root              /var/empty;
+        access_log        /var/log/nginx/access-8140.log;
+        #rewrite_log       /var/log/nginx/rewrite-8140.log;
+
+        ssl                    on;
+        ssl_certificate        /var/lib/puppet/ssl/certs/__FQDN__.pem;
+        ssl_certificate_key    /var/lib/puppet/ssl/private_keys/__FQDN__.pem;
+        ssl_client_certificate /var/lib/puppet/ssl/ca/ca_crt.pem;
+        ssl_ciphers            SSLv2:-LOW:-EXPORT:RC4+RSA;
+        ssl_session_cache      shared:SSL:8m;
+        ssl_session_timeout    5m;
+        ssl_verify_client      optional;
+        ssl_crl                /var/lib/puppet/ssl/ca/ca_crl.pem;
+
+        # Variables
+        # - $ssl_cipher returns the line of those utilized it is cipher
+        #   for established SSL-connection
+        # - $ssl_client_serial returns the series number of client
+        #   certificate for established SSL-connection
+        # - $ssl_client_s_dn returns line subject DN of client
+        #   certificate for established SSL-connection
+        # - $ssl_client_i_dn returns line issuer DN of client
+        #   certificate for established SSL-connection
+        # - $ssl_protocol returns the protocol of established
+        #   SSL-connection
+
+        location / {
+            proxy_pass         http://puppet-production;
+            proxy_redirect     off;
+            proxy_set_header   Host            $host;
+            proxy_set_header   X-Real-IP       $remote_addr;
+            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Client-Verify $ssl_client_verify;
+            proxy_set_header   X-Client-DN     $ssl_client_s_dn;
+            proxy_set_header   X-SSL-Subject   $ssl_client_s_dn;
+            proxy_set_header   X-SSL-Issuer    $ssl_client_i_dn;
+            proxy_read_timeout 65;
+        }
+    }
+
+    server {
+        listen            8141;
+        ssl_verify_client off;
+        root              /var/empty;
+        access_log        /var/log/nginx/access-8141.log;
+        #rewrite_log       /var/log/nginx/rewrite-8141.log;
+
+        location / {
+            proxy_pass  http://puppet-production;
+            proxy_redirect     off;
+            proxy_set_header   Host            $host;
+            proxy_set_header   X-Real-IP       $remote_addr;
+            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Client-Verify FAILURE;
+            proxy_set_header   X-Client-DN     $ssl_client_s_dn;
+            proxy_set_header   X-SSL-Subject   $ssl_client_s_dn;
+            proxy_set_header   X-SSL-Issuer    $ssl_client_i_dn;
+            proxy_read_timeout 65;
+        }
+    }
