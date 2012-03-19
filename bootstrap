@@ -90,8 +90,8 @@ function create_minimal_manifest()
 {
 # Finishing up minimal puppet manifests
     mkdir -p /etc/puppet/manifests/dev
-    if [ ! -f /etc/puppet/manifests/dev/site-dev.pp ]; then
-	echo 'node default {}' > /etc/puppet/manifests/dev/site-dev.pp
+    if [ ! -f /etc/puppet/environments/dev/manifests/site-dev.pp ]; then
+	echo 'node default {}' > /etc/puppet/environments/dev/manifests/site-dev.pp
     fi
 }
 
