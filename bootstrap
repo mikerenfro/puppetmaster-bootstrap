@@ -30,6 +30,8 @@ function add_puppet_repository()
     grep -q ${PUPPET_REPO} /etc/apt/sources.list || \
 	echo "deb ${PUPPET_REPO} ${DEBIAN_RELEASE} main" \
 	>> /etc/apt/sources.list
+    wget -O puppet_repo.gpg ${PUPPET_REPO}/pubkey.gpg
+    apt-key add puppet_repo.gpg
     apt-get -q update > /dev/null
 }
 
