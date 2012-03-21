@@ -109,7 +109,8 @@ FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
 FUNCTION_LIST="
-	add_backports_repository configure_nginx
+	add_backports_repository add_puppet_repository
+	configure_nginx
 	install_puppet configure_mysql configure_puppetmaster
 	restart_nginx_puppetmaster create_minimal_manifest test_puppet_client
 	"
