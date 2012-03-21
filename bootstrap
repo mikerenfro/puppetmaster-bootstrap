@@ -39,8 +39,7 @@ function install_dependencies()
 {
 # Install required packages interactively, so mysql-server can
 # prompt for a root password
-    apt-get ${APT_OPTIONS} install ${PUPPET_DEPENDS} ${PUPPET_RECOMMENDS} \
-	${OTHER_DEPENDS}
+    apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
 }
 
 function configure_nginx()
@@ -112,6 +111,7 @@ FQDN=`hostname --fqdn`
 cd ${BASEDIR}
 FUNCTION_LIST="
 	add_backports_repository add_puppet_repository
+	install_dependencies
 	configure_nginx
 	install_puppet configure_mysql configure_puppetmaster
 	restart_nginx_puppetmaster create_minimal_manifest test_puppet_client
