@@ -12,6 +12,7 @@ PUPPET_PACKAGES="
   puppetmaster
   puppetmaster-common
   puppet-el
+  puppetmaster-passenger
 "
 APT_OPTIONS='-q -y'
 
