@@ -3,10 +3,7 @@ DEBIAN_RELEASE="squeeze"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
-  pwgen xemacs21
-  mysql-server
-  libactiverecord-ruby1.8
-  libmysql-ruby1.8
+  xemacs21
 "
 PUPPET_PACKAGES="
   puppet
@@ -48,30 +45,15 @@ function install_puppet()
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
 }
 
-
-function configure_mysql()
-{
-# Configure mysql for storeconfigs
-    PUPPET_MYSQL_PASSWORD=`pwgen -s 8 1`
-    echo Enter mysql root password below to create puppet database:
-    mysqladmin -v -u root -p create puppet
-    echo
-    echo Enter mysql root password below to grant privileges to puppet user:
-    echo grant all privileges on puppet.\* to puppet@localhost identified \
-	by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
-}
-
 function configure_puppetmaster()
 {
 # Create puppet.conf, including storeconfigs support
     cp puppet.conf /etc/puppet/puppet.conf
     perl -pi.bak \
-	-e "s/__PASSWORD__/${PUPPET_MYSQL_PASSWORD}/g;s/__FQDN__/${FQDN}/g" \
+	-e "s/__FQDN__/${FQDN}/g" \
 	/etc/puppet/puppet.conf
 	chmod 600 /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
-# Create /etc/default/puppetmaster
-#    cp puppetmaster.default /etc/default/puppetmaster
 }
 
 function restart_apache()
@@ -102,7 +84,6 @@ FUNCTION_LIST="
 	add_puppet_repository
 	install_dependencies
 	install_puppet
-	configure_mysql
 	configure_puppetmaster
 	restart_apache
 	create_minimal_manifest
