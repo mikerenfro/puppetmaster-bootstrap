@@ -52,7 +52,8 @@ function configure_puppetmaster()
     perl -pi.bak \
 	-e "s/__FQDN__/${FQDN}/g" \
 	/etc/puppet/puppet.conf
-	chmod 600 /etc/puppet/puppet.conf
+	# chmod 640 /etc/puppet/puppet.conf
+	# chown root:puppet /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
 }
 
@@ -61,7 +62,8 @@ function create_minimal_manifest()
 # Finishing up minimal puppet manifests
     mkdir -p /etc/puppet/environments/dev/manifests
     if [ ! -f /etc/puppet/environments/dev/manifests/site-dev.pp ]; then
-	echo 'node default { notify{"It works (in dev environment)!":} }' > /etc/puppet/environments/dev/manifests/site-dev.pp
+	echo 'node default { notify{"It works (in dev environment)!":} }' \
+		> /etc/puppet/environments/dev/manifests/site-dev.pp
     fi
 }
 
