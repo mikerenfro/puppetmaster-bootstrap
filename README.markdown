@@ -1,8 +1,7 @@
 Mike Renfro's shell script and supporting files to bootstrap a
 puppetmaster on a new Debian install. Currently uses:
 
-  * puppet packages from apt.puppetlabs.com
-  * nginx-light 1.1.14 (from Debian backports)
+  * puppet and puppetmaster-passenger packages from apt.puppetlabs.com
   * mysql 5.1 for storeconfigs
 
 Installation:
