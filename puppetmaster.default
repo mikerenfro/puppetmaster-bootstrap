@@ -2,8 +2,7 @@
 
 # Start puppetmaster on boot? If you are using passenger, you should
 # have this set to "no"
-START=yes
+START=no
 
 # Startup options
 DAEMON_OPTS=""
-PORT=18140

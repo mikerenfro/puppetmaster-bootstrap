@@ -3,7 +3,7 @@ DEBIAN_RELEASE="squeeze"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com/"
 OTHER_DEPENDS="
-  mongrel nginx-light pwgen xemacs21
+  pwgen xemacs21
   mysql-server libactiverecord-ruby1.8 libmysql-ruby1.8
 "
 PUPPET_PACKAGES="
@@ -43,18 +43,9 @@ function install_dependencies()
     apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
 }
 
-function configure_nginx()
-{
-# Make an nginx site for puppetmaster
-    cp nginx-site /etc/nginx/sites-available/puppetmaster
-    ln -s /etc/nginx/sites-available/puppetmaster /etc/nginx/sites-enabled/
-    perl -pi.bak -E "s/__FQDN__/${FQDN}/g" /etc/nginx/sites-available/puppetmaster
-}
-
 function install_puppet()
 {
 # Install puppet packages
-#    dpkg -i ${PUPPET_PACKAGES}
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
     /etc/init.d/puppetmaster stop
 }
@@ -83,12 +74,10 @@ function configure_puppetmaster()
     cp puppetmaster.default /etc/default/puppetmaster
 }
 
-function restart_nginx_puppetmaster()
+function restart_puppetmaster()
 {
 # Restarting nginx and puppetmaster
-    /etc/init.d/nginx stop
     /etc/init.d/puppetmaster stop
-    /etc/init.d/nginx start
     /etc/init.d/puppetmaster start
 }
 
@@ -103,7 +92,7 @@ function create_minimal_manifest()
 
 function test_puppet_client()
 {
-    puppetd -vt
+    puppet agent -vt
 }
 
 BASEDIR=`dirname $0`
@@ -111,11 +100,15 @@ FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
 FUNCTION_LIST="
-	add_backports_repository add_puppet_repository
+	add_backports_repository
+	add_puppet_repository
 	install_dependencies
-	configure_nginx
-	install_puppet configure_mysql configure_puppetmaster
-	restart_nginx_puppetmaster create_minimal_manifest test_puppet_client
+	install_puppet
+	configure_mysql
+	configure_puppetmaster
+	restart_puppetmaster
+	create_minimal_manifest
+	test_puppet_client
 	"
 for name in ${FUNCTION_LIST}; do
   echo === Running ${name}\(\) ===
