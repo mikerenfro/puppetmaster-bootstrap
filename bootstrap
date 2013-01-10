@@ -10,7 +10,7 @@ PUPPET_PACKAGES="
   puppet-el
   puppetmaster-passenger
 "
-APT_OPTIONS='-q -y'
+APT_OPTIONS='-qq -y'
 
 function add_backports_repository()
 {
