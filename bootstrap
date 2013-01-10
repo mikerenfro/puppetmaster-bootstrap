@@ -72,7 +72,7 @@ function configure_puppetmaster()
 	chmod 600 /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
 # Create /etc/default/puppetmaster
-    cp puppetmaster.default /etc/default/puppetmaster
+    #cp puppetmaster.default /etc/default/puppetmaster
 }
 
 function restart_apache_and_puppetmaster()
