@@ -8,10 +8,10 @@ OTHER_DEPENDS="
 "
 PUPPET_PACKAGES="
   puppet
-  puppet-common
   puppetmaster
-  puppetmaster-common
   puppet-el
+"
+PASSENGER_PACKAGES="
   puppetmaster-passenger
 "
 APT_OPTIONS='-q -y'
@@ -48,6 +48,12 @@ function install_puppet()
 # Install puppet packages
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
     /etc/init.d/puppetmaster stop
+}
+
+function install_passenger()
+{
+# Install passenger packages
+    apt-get ${APT_OPTIONS} --install-recommends install ${PASSENGER_PACKAGES}
 }
 
 function configure_mysql()
@@ -106,6 +112,7 @@ FUNCTION_LIST="
 	add_puppet_repository
 	install_dependencies
 	install_puppet
+	install_passenger
 	configure_mysql
 	configure_puppetmaster
 	restart_apache_and_puppetmaster
