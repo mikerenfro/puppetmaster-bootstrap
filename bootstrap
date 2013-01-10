@@ -8,7 +8,6 @@ OTHER_DEPENDS="
 "
 PUPPET_PACKAGES="
   puppet
-  puppetmaster
   puppet-el
 "
 PASSENGER_PACKAGES="
