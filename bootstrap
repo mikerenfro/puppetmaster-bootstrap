@@ -69,15 +69,17 @@ function configure_puppetmaster()
     perl -pi.bak \
 	-e "s/__PASSWORD__/${PUPPET_MYSQL_PASSWORD}/g;s/__FQDN__/${FQDN}/g" \
 	/etc/puppet/puppet.conf
+	chmod 600 /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
 # Create /etc/default/puppetmaster
     cp puppetmaster.default /etc/default/puppetmaster
 }
 
-function restart_puppetmaster()
+function restart_apache_and_puppetmaster()
 {
 # Restarting nginx and puppetmaster
     /etc/init.d/puppetmaster stop
+	/etc/init.d/apache2 restart
     /etc/init.d/puppetmaster start
 }
 
@@ -106,7 +108,7 @@ FUNCTION_LIST="
 	install_puppet
 	configure_mysql
 	configure_puppetmaster
-	restart_puppetmaster
+	restart_apache_and_puppetmaster
 	create_minimal_manifest
 	test_puppet_client
 	"
