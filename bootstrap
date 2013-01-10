@@ -56,18 +56,18 @@ function configure_puppetmaster()
     mkdir /etc/puppet/plugins
 }
 
-function restart_apache()
-{
-	/etc/init.d/apache2 restart
-}
-
 function create_minimal_manifest()
 {
 # Finishing up minimal puppet manifests
     mkdir -p /etc/puppet/environments/dev/manifests
     if [ ! -f /etc/puppet/environments/dev/manifests/site-dev.pp ]; then
-	echo 'node default {}' > /etc/puppet/environments/dev/manifests/site-dev.pp
+	echo 'node default { notify{"It works (in dev environment)!":} }' > /etc/puppet/environments/dev/manifests/site-dev.pp
     fi
+}
+
+function restart_apache()
+{
+	/etc/init.d/apache2 restart
 }
 
 function test_puppet_client()
@@ -79,15 +79,17 @@ BASEDIR=`dirname $0`
 FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
-# FUNCTION_LIST="
-# 	add_backports_repository
-# 	add_puppet_repository
-# 	install_dependencies
-# 	install_puppet
-# 	create_minimal_manifest
-# 	test_puppet_client
-# 	"
-FUNCTION_LIST="$*"
+FUNCTION_LIST="
+	add_backports_repository
+	add_puppet_repository
+	install_dependencies
+	install_puppet
+	configure_puppetmaster
+	create_minimal_manifest
+	restart_apache
+	test_puppet_client
+	"
+# FUNCTION_LIST="$*"
 for name in ${FUNCTION_LIST}; do
   echo === Running ${name}\(\) ===
   ${name}
