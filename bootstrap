@@ -4,13 +4,13 @@ BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   pwgen xemacs21
-  mysql-server libactiverecord-ruby1.8 libmysql-ruby1.8
+  mysql-server
+  libactiverecord-ruby1.8
+  libmysql-ruby1.8
 "
 PUPPET_PACKAGES="
   puppet
   puppet-el
-"
-PASSENGER_PACKAGES="
   puppetmaster-passenger
 "
 APT_OPTIONS='-q -y'
@@ -46,14 +46,8 @@ function install_puppet()
 {
 # Install puppet packages
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
-    /etc/init.d/puppetmaster stop
 }
 
-function install_passenger()
-{
-# Install passenger packages
-    apt-get ${APT_OPTIONS} --install-recommends install ${PASSENGER_PACKAGES}
-}
 
 function configure_mysql()
 {
@@ -77,15 +71,12 @@ function configure_puppetmaster()
 	chmod 600 /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
 # Create /etc/default/puppetmaster
-    cp puppetmaster.default /etc/default/puppetmaster
+#    cp puppetmaster.default /etc/default/puppetmaster
 }
 
-function restart_apache_and_puppetmaster()
+function restart_apache()
 {
-# Restarting nginx and puppetmaster
-    /etc/init.d/puppetmaster stop
 	/etc/init.d/apache2 restart
-    /etc/init.d/puppetmaster start
 }
 
 function create_minimal_manifest()
@@ -111,10 +102,9 @@ FUNCTION_LIST="
 	add_puppet_repository
 	install_dependencies
 	install_puppet
-	install_passenger
 	configure_mysql
 	configure_puppetmaster
-	restart_apache_and_puppetmaster
+	restart_apache
 	create_minimal_manifest
 	test_puppet_client
 	"
