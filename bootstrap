@@ -79,16 +79,15 @@ BASEDIR=`dirname $0`
 FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
-FUNCTION_LIST="
-	add_backports_repository
-	add_puppet_repository
-	install_dependencies
-	install_puppet
-	configure_puppetmaster
-	restart_apache
-	create_minimal_manifest
-	test_puppet_client
-	"
+# FUNCTION_LIST="
+# 	add_backports_repository
+# 	add_puppet_repository
+# 	install_dependencies
+# 	install_puppet
+# 	create_minimal_manifest
+# 	test_puppet_client
+# 	"
+FUNCTION_LIST="$*"
 for name in ${FUNCTION_LIST}; do
   echo === Running ${name}\(\) ===
   ${name}
