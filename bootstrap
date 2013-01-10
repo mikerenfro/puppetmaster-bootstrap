@@ -1,7 +1,7 @@
 #!/bin/bash
 DEBIAN_RELEASE="squeeze"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
-PUPPET_REPO="http://apt.puppetlabs.com/"
+PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   pwgen xemacs21
   mysql-server libactiverecord-ruby1.8 libmysql-ruby1.8
