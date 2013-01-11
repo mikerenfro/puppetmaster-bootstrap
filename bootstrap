@@ -11,7 +11,10 @@ PUPPET_PACKAGES="
   puppet
   puppet-el
   puppetmaster-passenger
+"
+PUPPETDB_PACKAGES="
   puppetdb
+  puppetdb-terminus
 "
 APT_OPTIONS='-qq -y'
 
@@ -19,8 +22,8 @@ function add_backports_repository()
 {
 # Add backports for nginx and other packages if needed
     grep -q ${BACKPORTS_REPO} /etc/apt/sources.list || \
-	echo "deb ${BACKPORTS_REPO} ${DEBIAN_RELEASE}-backports main" \
-	>> /etc/apt/sources.list
+	    echo "deb ${BACKPORTS_REPO} ${DEBIAN_RELEASE}-backports main" \
+	    >> /etc/apt/sources.list
     apt-get -q update > /dev/null
 }
 
@@ -28,8 +31,8 @@ function add_puppet_repository()
 {
 # Add puppet repository for later puppet releases
     grep -q ${PUPPET_REPO} /etc/apt/sources.list || \
-	echo "deb ${PUPPET_REPO} ${DEBIAN_RELEASE} main" \
-	>> /etc/apt/sources.list
+	    echo "deb ${PUPPET_REPO} ${DEBIAN_RELEASE} main" \
+	    >> /etc/apt/sources.list
     wget -O puppet_repo.gpg ${PUPPET_REPO}/pubkey.gpg
     apt-key add puppet_repo.gpg
     apt-get -q update > /dev/null
@@ -40,12 +43,6 @@ function install_dependencies()
 # Install required packages interactively, so postgresql can
 # prompt for a root password
     apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
-}
-
-function install_puppet()
-{
-# Install puppet packages
-    apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
 }
 
 function configure_postgresql()
@@ -60,16 +57,27 @@ function configure_postgresql()
 	# by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
 }
 
+function install_puppet()
+{
+# Install puppet packages
+    apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
+}
+
 function configure_puppetmaster()
 {
 # Create puppet.conf, including storeconfigs support
     cp puppet.conf /etc/puppet/puppet.conf
     perl -pi.bak \
-	-e "s/__FQDN__/${FQDN}/g;s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
-	/etc/puppet/puppet.conf
+	    -e "s/__FQDN__/${FQDN}/g;s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
+	    /etc/puppet/puppet.conf
 	chmod 640 /etc/puppet/puppet.conf
 	chown root:puppet /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
+}
+
+function restart_apache()
+{
+	/etc/init.d/apache2 restart
 }
 
 function create_minimal_manifest()
@@ -89,15 +97,27 @@ function create_minimal_manifest()
 	fi
 }
 
-function restart_apache_and_puppetdb()
-{
-	/etc/init.d/puppetdb restart
-	/etc/init.d/apache2 restart
-}
-
 function test_puppet_client()
 {
     puppet agent -vt
+}
+
+function install_puppetdb()
+{
+# Install puppet packages
+    apt-get ${APT_OPTIONS} --install-recommends install ${PUPPETDB_PACKAGES}
+}
+
+function configure_puppetdb()
+{
+# Create puppetdb.conf
+	cp puppetdb.conf /etc/puppet
+}
+
+function configure_puppetmaster_for_puppetdb()
+{
+# Create updated puppet.conf for puppetdb support
+    :
 }
 
 BASEDIR=`dirname $0`
@@ -111,8 +131,13 @@ FUNCTION_LIST="
 	configure_postgresql
 	install_puppet
 	configure_puppetmaster
+	restart_apache
 	create_minimal_manifest
-	restart_apache_and_puppetdb
+	test_puppet_client
+	install_puppetdb
+	configure_puppetdb
+	configure_puppetmaster_for_puppetdb
+	restart_apache
 	test_puppet_client
 	"
 # FUNCTION_LIST="$*"
