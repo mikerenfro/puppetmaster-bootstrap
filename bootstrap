@@ -6,6 +6,8 @@ OTHER_DEPENDS="
   pwgen
   xemacs21
   mysql-server-5.1
+  libactiverecord-ruby1.8
+  libmysql-ruby1.8
 "
 PUPPET_PACKAGES="
   puppet
