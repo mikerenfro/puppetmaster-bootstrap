@@ -3,6 +3,7 @@ DEBIAN_RELEASE="squeeze"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
+  pwgen
   xemacs21
   mysql-server-5.1
 "
