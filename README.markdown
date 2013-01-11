@@ -1,8 +1,8 @@
 Mike Renfro's shell script and supporting files to bootstrap a
 puppetmaster on a new Debian install. Currently uses:
 
-  * puppet and puppetmaster-passenger packages from apt.puppetlabs.com
-  * mysql 5.1 for storeconfigs
+  * puppet, puppetmaster-passenger, and puppetdb packages from apt.puppetlabs.com
+  * postgres for storeconfigs
 
 Installation:
 

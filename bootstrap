@@ -5,15 +5,13 @@ PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   pwgen
   xemacs21
-  mysql-server-5.1
-  libactiverecord-ruby1.8
-  libmysql-ruby1.8
-  stompserver
+  postgresql
 "
 PUPPET_PACKAGES="
   puppet
   puppet-el
   puppetmaster-passenger
+  puppetdb
 "
 APT_OPTIONS='-qq -y'
 
@@ -39,7 +37,7 @@ function add_puppet_repository()
 
 function install_dependencies()
 {
-# Install required packages interactively, so mysql-server can
+# Install required packages interactively, so postgresql can
 # prompt for a root password
     apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
 }
@@ -50,16 +48,16 @@ function install_puppet()
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
 }
 
-function configure_mysql()
+function configure_postgresql()
 {
-# Configure mysql for storeconfigs
-    PUPPET_MYSQL_PASSWORD=`pwgen -s 8 1`
-    echo Enter mysql root password below to create puppet database:
-    mysqladmin -v -u root -p create puppet
-    echo
-    echo Enter mysql root password below to grant privileges to puppet user:
-    echo grant all privileges on puppet.\* to puppet@localhost identified \
-	by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
+# Configure postgresql for storeconfigs
+    PUPPET_POSTGRESQL_PASSWORD=`pwgen -s 8 1`
+	#     echo Enter postgresql root password below to create puppet database:
+	#     mysqladmin -v -u root -p create puppet
+	#     echo
+	#     echo Enter mysql root password below to grant privileges to puppet user:
+	#     echo grant all privileges on puppet.\* to puppet@localhost identified \
+	# by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
 }
 
 function configure_puppetmaster()
@@ -67,25 +65,33 @@ function configure_puppetmaster()
 # Create puppet.conf, including storeconfigs support
     cp puppet.conf /etc/puppet/puppet.conf
     perl -pi.bak \
-	-e "s/__FQDN__/${FQDN}/g;s/__PASSWORD__/${PUPPET_MYSQL_PASSWORD}/g" \
+	-e "s/__FQDN__/${FQDN}/g;s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
 	/etc/puppet/puppet.conf
-	# chmod 640 /etc/puppet/puppet.conf
-	# chown root:puppet /etc/puppet/puppet.conf
+	chmod 640 /etc/puppet/puppet.conf
+	chown root:puppet /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
 }
 
 function create_minimal_manifest()
 {
 # Finishing up minimal puppet manifests
-    mkdir -p /etc/puppet/environments/dev/manifests
-    if [ ! -f /etc/puppet/environments/dev/manifests/site-dev.pp ]; then
-	echo 'node default { notify{"It works (in dev environment)!":} }' \
-		> /etc/puppet/environments/dev/manifests/site-dev.pp
-    fi
+    for env in production dev; do
+	    mkdir -p /etc/puppet/environments/${env}/manifests
+	    if [ ! -f /etc/puppet/environments/${env}/manifests/site-${env}.pp ]; then
+		echo "node default { notify{\"It works (in ${env} environment)!\":} }" \
+			> /etc/puppet/environments/${env}/manifests/site-${env}.pp
+	    fi
+	done
+	mkdir -p /etc/puppet/manifests
+	if [ ! -f /etc/puppet/manifests/unknown_environment.pp ]; then
+		echo "node default {notify{\"This host is not attached to an environment.\":} }" \
+			> /etc/puppet/manifests/unknown_environment.pp
+	fi
 }
 
-function restart_apache()
+function restart_apache_and_puppetdb()
 {
+	/etc/init.d/puppetdb restart
 	/etc/init.d/apache2 restart
 }
 
@@ -102,11 +108,11 @@ FUNCTION_LIST="
 	add_backports_repository
 	add_puppet_repository
 	install_dependencies
-	configure_mysql
+	configure_postgresql
 	install_puppet
 	configure_puppetmaster
 	create_minimal_manifest
-	restart_apache
+	restart_apache_and_puppetdb
 	test_puppet_client
 	"
 # FUNCTION_LIST="$*"
