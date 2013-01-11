@@ -4,6 +4,7 @@ BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   xemacs21
+  mysql-server-5.1
 "
 PUPPET_PACKAGES="
   puppet
@@ -45,12 +46,24 @@ function install_puppet()
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
 }
 
+function configure_mysql()
+{
+# Configure mysql for storeconfigs
+    PUPPET_MYSQL_PASSWORD=`pwgen -s 8 1`
+    echo Enter mysql root password below to create puppet database:
+    mysqladmin -v -u root -p create puppet
+    echo
+    echo Enter mysql root password below to grant privileges to puppet user:
+    echo grant all privileges on puppet.\* to puppet@localhost identified \
+	by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
+}
+
 function configure_puppetmaster()
 {
 # Create puppet.conf, including storeconfigs support
     cp puppet.conf /etc/puppet/puppet.conf
     perl -pi.bak \
-	-e "s/__FQDN__/${FQDN}/g" \
+	-e "s/__FQDN__/${FQDN}/g;s/__PASSWORD__/${PUPPET_MYSQL_PASSWORD}/g" \
 	/etc/puppet/puppet.conf
 	# chmod 640 /etc/puppet/puppet.conf
 	# chown root:puppet /etc/puppet/puppet.conf
@@ -85,6 +98,7 @@ FUNCTION_LIST="
 	add_backports_repository
 	add_puppet_repository
 	install_dependencies
+	configure_mysql
 	install_puppet
 	configure_puppetmaster
 	create_minimal_manifest
