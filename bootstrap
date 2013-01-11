@@ -8,6 +8,7 @@ OTHER_DEPENDS="
   mysql-server-5.1
   libactiverecord-ruby1.8
   libmysql-ruby1.8
+  stompserver
 "
 PUPPET_PACKAGES="
   puppet
