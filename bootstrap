@@ -121,8 +121,11 @@ function configure_puppetmaster_for_puppetdb()
 {
 # Create updated puppet.conf for puppetdb support
     cp puppet-with-puppetdb.conf /etc/puppet/puppet.conf
+	perl -pi.bak \
+	    -e "s/__FQDN__/${FQDN}/g;" \
+	    /etc/puppet/puppet.conf
 	chmod 640 /etc/puppet/puppet.conf
-	chown root:puppet /etc/puppet/puppet.conf
+	chown root:puppet /etc/puppet/puppet.conf	
 }
 
 BASEDIR=`dirname $0`
