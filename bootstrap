@@ -49,6 +49,8 @@ function configure_postgresql()
 {
 # Configure postgresql for storeconfigs
     PUPPET_POSTGRESQL_PASSWORD=`pwgen -s 8 1`
+    su postgres -- psql -c "create user puppetdb with password '${PUPPET_POSTGRESQL_PASSWORD}'"
+	su postgres createdb -O puppetdb
 	#     echo Enter postgresql root password below to create puppet database:
 	#     mysqladmin -v -u root -p create puppet
 	#     echo
@@ -66,10 +68,7 @@ function install_puppet()
 function configure_puppetmaster()
 {
 # Create puppet.conf, including storeconfigs support
-    cp puppet.conf /etc/puppet/puppet.conf
-    perl -pi.bak \
-	    -e "s/__FQDN__/${FQDN}/g;s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
-	    /etc/puppet/puppet.conf
+    cp puppet-without-puppetdb.conf /etc/puppet/puppet.conf
 	chmod 640 /etc/puppet/puppet.conf
 	chown root:puppet /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
@@ -110,14 +109,20 @@ function install_puppetdb()
 
 function configure_puppetdb()
 {
-# Create puppetdb.conf
-	cp puppetdb.conf /etc/puppet
+# Create puppetdb
+	cp puppetdb.conf routes.yaml /etc/puppet
+	perl -pi.bak \
+	    -e "s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
+	    /etc/puppet/puppetdb.conf
+	
 }
 
 function configure_puppetmaster_for_puppetdb()
 {
 # Create updated puppet.conf for puppetdb support
-    :
+    cp puppet-with-puppetdb.conf /etc/puppet/puppet.conf
+	chmod 640 /etc/puppet/puppet.conf
+	chown root:puppet /etc/puppet/puppet.conf
 }
 
 BASEDIR=`dirname $0`
