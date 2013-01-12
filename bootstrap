@@ -153,4 +153,6 @@ for name in ${FUNCTION_LIST}; do
   echo === Running ${name}\(\) ===
   ${name}
   echo
+  # echo Press enter to continue
+  # read junk
 done
