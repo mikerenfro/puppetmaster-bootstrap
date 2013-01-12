@@ -69,6 +69,9 @@ function configure_puppetmaster()
 {
 # Create puppet.conf, including storeconfigs support
     cp puppet-without-puppetdb.conf /etc/puppet/puppet.conf
+    perl -pi.bak \
+        -e "s/__FQDN__/${FQDN}/g;" \
+        /etc/puppet/puppet.conf
     chmod 640 /etc/puppet/puppet.conf
     chown root:puppet /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
@@ -114,7 +117,8 @@ function configure_puppetdb()
     perl -pi.bak \
         -e "s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
         /etc/puppet/puppetdb.conf
-    
+    chown root:puppet /etc/puppet/puppetdb.conf
+    chmod 640 /etc/puppet/puppetdb.conf
 }
 
 function configure_puppetmaster_for_puppetdb()
