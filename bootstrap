@@ -5,7 +5,6 @@ PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   pwgen
   xemacs21
-  postgresql
 "
 PUPPET_PACKAGES="
   puppet
@@ -20,7 +19,7 @@ APT_OPTIONS='-qq -y'
 
 function add_backports_repository()
 {
-# Add backports for nginx and other packages if needed
+    # Add backports for nginx and other packages if needed
     grep -q ${BACKPORTS_REPO} /etc/apt/sources.list || \
         echo "deb ${BACKPORTS_REPO} ${DEBIAN_RELEASE}-backports main" \
         >> /etc/apt/sources.list
@@ -29,7 +28,7 @@ function add_backports_repository()
 
 function add_puppet_repository()
 {
-# Add puppet repository for later puppet releases
+    # Add puppet repository for later puppet releases
     grep -q ${PUPPET_REPO} /etc/apt/sources.list || \
         echo "deb ${PUPPET_REPO} ${DEBIAN_RELEASE} main" \
         >> /etc/apt/sources.list
@@ -40,14 +39,14 @@ function add_puppet_repository()
 
 function install_dependencies()
 {
-# Install required packages interactively, so postgresql can
-# prompt for a root password
+    # Install required packages interactively, so postgresql can
+    # prompt for a root password
     apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
 }
 
 function configure_postgresql()
 {
-# Configure postgresql for storeconfigs
+    # Configure postgresql for storeconfigs
     PUPPET_POSTGRESQL_PASSWORD=`pwgen -s 8 1`
     su postgres -c "/usr/bin/psql -c \"create user puppetdb with password '${PUPPET_POSTGRESQL_PASSWORD}'\""
     su postgres -c "createdb -O puppetdb puppetdb"
@@ -61,20 +60,27 @@ function configure_postgresql()
 
 function install_puppet()
 {
-# Install puppet packages
+    # Install puppet packages
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
 }
 
 function configure_puppetmaster()
 {
-# Create puppet.conf, including storeconfigs support
-    cp puppet-without-puppetdb.conf /etc/puppet/puppet.conf
-    perl -pi.bak \
-        -e "s/__FQDN__/${FQDN}/g;" \
-        /etc/puppet/puppet.conf
-    chmod 640 /etc/puppet/puppet.conf
-    chown root:puppet /etc/puppet/puppet.conf
     mkdir /etc/puppet/plugins
+    # Create puppet.conf, including storeconfigs support
+    cp puppet-generic.conf /etc/puppet/puppet.conf
+    reformat_conf_files()
+}
+
+function reformat_conf_files()
+{
+    # Global search and replace tags from conf files in /etc/puppet
+    perl -pi.bak \
+        -e "s/__FQDN__/${FQDN}/g;
+            s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
+        /etc/puppet/*.conf
+    chmod 640 /etc/puppet/*.conf
+    chown root:puppet /etc/puppet/*.conf    
 }
 
 function restart_apache()
@@ -84,7 +90,7 @@ function restart_apache()
 
 function create_minimal_manifest()
 {
-# Finishing up minimal puppet manifests
+    # Finishing up minimal puppet manifests
     for env in production dev; do
         mkdir -p /etc/puppet/environments/${env}/manifests
         if [ ! -f /etc/puppet/environments/${env}/manifests/site-${env}.pp ]; then
@@ -106,30 +112,23 @@ function test_puppet_client()
 
 function install_puppetdb()
 {
-# Install puppet packages
+    # Install puppet packages
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPETDB_PACKAGES}
 }
 
 function configure_puppetdb()
 {
-# Create puppetdb
-    cp puppetdb.conf routes.yaml /etc/puppet
-    perl -pi.bak \
-        -e "s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
-        /etc/puppet/puppetdb.conf
-    chown root:puppet /etc/puppet/puppetdb.conf
-    chmod 640 /etc/puppet/puppetdb.conf
+    # Create puppetdb
+    cp routes.yaml /etc/puppet
+    cp puppetd-builtin.conf /etc/puppet/puppetdb.conf
+    reformat_conf_files()
 }
 
 function configure_puppetmaster_for_puppetdb()
 {
-# Create updated puppet.conf for puppetdb support
-    cp puppet-with-puppetdb.conf /etc/puppet/puppet.conf
-    perl -pi.bak \
-        -e "s/__FQDN__/${FQDN}/g;" \
-        /etc/puppet/puppet.conf
-    chmod 640 /etc/puppet/puppet.conf
-    chown root:puppet /etc/puppet/puppet.conf   
+    # Create updated puppet.conf for puppetdb support
+    cat puppet-generic.conf puppet-storeconfigs.conf > /etc/puppet/puppet.conf
+    reformat_conf_files()
 }
 
 BASEDIR=`dirname $0`
@@ -140,7 +139,6 @@ FUNCTION_LIST="
     add_backports_repository
     add_puppet_repository
     install_dependencies
-    configure_postgresql
     install_puppet
     configure_puppetmaster
     restart_apache
