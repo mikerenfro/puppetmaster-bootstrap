@@ -5,6 +5,7 @@ PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   pwgen
   xemacs21
+  postgresql
 "
 PUPPET_PACKAGES="
   puppet
@@ -49,13 +50,7 @@ function configure_postgresql()
     # Configure postgresql for storeconfigs
     PUPPET_POSTGRESQL_PASSWORD=`pwgen -s 8 1`
     su postgres -c "/usr/bin/psql -c \"create user puppetdb with password '${PUPPET_POSTGRESQL_PASSWORD}'\""
-    su postgres -c "createdb -O puppetdb puppetdb"
-    #     echo Enter postgresql root password below to create puppet database:
-    #     mysqladmin -v -u root -p create puppet
-    #     echo
-    #     echo Enter mysql root password below to grant privileges to puppet user:
-    #     echo grant all privileges on puppet.\* to puppet@localhost identified \
-    # by \'${PUPPET_MYSQL_PASSWORD}\'\; | mysql -v -u root -p
+    su postgres -c "/usr/bin/createdb -O puppetdb puppetdb"
 }
 
 function install_puppet()
@@ -120,7 +115,8 @@ function configure_puppetdb()
 {
     # Create puppetdb
     cp routes.yaml /etc/puppet
-    cp puppetdb-builtin.conf /etc/puppet/puppetdb.conf
+    # cp puppetdb-builtin.conf /etc/puppet/puppetdb.conf
+    cp puppetdb-postgresql.conf /etc/puppet/puppetdb.conf
     reformat_conf_files
 }
 
@@ -145,6 +141,7 @@ FUNCTION_LIST="
     create_minimal_manifest
     test_puppet_client
     install_puppetdb
+    configure_postgresql
     configure_puppetdb
     configure_puppetmaster_for_puppetdb
     restart_apache

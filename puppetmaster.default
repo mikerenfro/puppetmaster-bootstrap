@@ -1,8 +1,0 @@
-# Defaults for puppetmaster - sourced by /etc/init.d/puppetmaster
-
-# Start puppetmaster on boot? If you are using passenger, you should
-# have this set to "no"
-START=no
-
-# Startup options
-DAEMON_OPTS=""
