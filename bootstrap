@@ -120,7 +120,7 @@ function configure_puppetdb()
 {
     # Create puppetdb
     cp routes.yaml /etc/puppet
-    cp puppetd-builtin.conf /etc/puppet/puppetdb.conf
+    cp puppetdb-builtin.conf /etc/puppet/puppetdb.conf
     reformat_conf_files
 }
 
