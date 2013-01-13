@@ -69,7 +69,7 @@ function configure_puppetmaster()
     mkdir /etc/puppet/plugins
     # Create puppet.conf, including storeconfigs support
     cp puppet-generic.conf /etc/puppet/puppet.conf
-    reformat_conf_files()
+    reformat_conf_files
 }
 
 function reformat_conf_files()
@@ -121,14 +121,14 @@ function configure_puppetdb()
     # Create puppetdb
     cp routes.yaml /etc/puppet
     cp puppetd-builtin.conf /etc/puppet/puppetdb.conf
-    reformat_conf_files()
+    reformat_conf_files
 }
 
 function configure_puppetmaster_for_puppetdb()
 {
     # Create updated puppet.conf for puppetdb support
     cat puppet-generic.conf puppet-storeconfigs.conf > /etc/puppet/puppet.conf
-    reformat_conf_files()
+    reformat_conf_files
 }
 
 BASEDIR=`dirname $0`
