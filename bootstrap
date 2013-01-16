@@ -5,17 +5,13 @@ PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   pwgen
   xemacs21
-  postgresql
 "
 PUPPET_PACKAGES="
   puppet
   puppet-el
   puppetmaster-passenger
 "
-PUPPETDB_PACKAGES="
-  puppetdb
-  puppetdb-terminus
-"
+
 APT_OPTIONS='-qq -y'
 
 function add_backports_repository()
@@ -43,14 +39,6 @@ function install_dependencies()
     # Install required packages interactively, so postgresql can
     # prompt for a root password
     apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
-}
-
-function configure_postgresql()
-{
-    # Configure postgresql for storeconfigs
-    PUPPET_POSTGRESQL_PASSWORD=`pwgen -s 8 1`
-    su postgres -c "/usr/bin/psql -c \"create user puppetdb with password '${PUPPET_POSTGRESQL_PASSWORD}'\""
-    su postgres -c "/usr/bin/createdb -O puppetdb puppetdb"
 }
 
 function install_puppet()
@@ -107,24 +95,9 @@ function test_puppet_client()
 
 function install_puppetdb()
 {
-    # Install puppet packages
-    apt-get ${APT_OPTIONS} --install-recommends install ${PUPPETDB_PACKAGES}
-}
-
-function configure_puppetdb()
-{
-    # Create puppetdb
-    cp routes.yaml /etc/puppet
-    # cp puppetdb-builtin.conf /etc/puppet/puppetdb.conf
-    cp puppetdb-postgresql.conf /etc/puppet/puppetdb.conf
-    reformat_conf_files
-}
-
-function configure_puppetmaster_for_puppetdb()
-{
-    # Create updated puppet.conf for puppetdb support
-    cat puppet-generic.conf puppet-storeconfigs.conf > /etc/puppet/puppet.conf
-    reformat_conf_files
+    # Install puppetdb packages and modules
+    # Ref: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-puppetdb/
+    puppet module install puppetlabs/puppetdb
 }
 
 BASEDIR=`dirname $0`
@@ -141,10 +114,6 @@ FUNCTION_LIST="
     create_minimal_manifest
     test_puppet_client
     install_puppetdb
-    configure_postgresql
-    configure_puppetdb
-    configure_puppetmaster_for_puppetdb
-    restart_apache
     test_puppet_client
     "
 # FUNCTION_LIST="$*"
@@ -155,3 +124,10 @@ for name in ${FUNCTION_LIST}; do
   # echo Press enter to continue
   # read junk
 done
+cat <<EOD
+puppetdb is installed, and a puppetdb module is available for configuration,
+but puppetdb is not currently in use.
+
+See http://puppetlabs.com/blog/module-of-the-week-puppetlabs-puppetdb/ for
+further configuration instructions.
+EOD
