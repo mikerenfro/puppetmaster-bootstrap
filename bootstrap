@@ -93,6 +93,11 @@ function test_puppet_client()
     puppet agent -vt
 }
 
+function test_puppet_client_quietly()
+{
+    puppet agent -vt >& /dev/null
+}
+
 function install_puppetdb()
 {
     # Install puppetdb packages and modules
@@ -103,6 +108,7 @@ function install_puppetdb()
 function create_larger_manifest()
 {
     # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
+    echo "Creating single-node puppetmaster/puppetdb/postgresql configuration"
     cat >> /etc/puppet/environments/dev/manifests/site-dev.pp <<EOF
 node "${FQDN}" {
     class { 'puppetdb::master::config':
@@ -117,6 +123,11 @@ node "${FQDN}" {
     }
 }
 EOF
+}
+
+function verify_puppetdb_works()
+{
+    grep "replace.*${FQDN}" /var/log/puppetdb/puppetdb.log && echo Puppetdb works!
 }
 
 BASEDIR=`dirname $0`
@@ -135,6 +146,10 @@ FUNCTION_LIST="
     install_puppetdb
     create_larger_manifest
     test_puppet_client
+    test_puppet_client_quietly
+    test_puppet_client_quietly
+    test_puppet_client_quietly
+    verify_puppetdb_works
     "
 # FUNCTION_LIST="$*"
 for name in ${FUNCTION_LIST}; do
@@ -144,10 +159,3 @@ for name in ${FUNCTION_LIST}; do
   # echo Press enter to continue
   # read junk
 done
-cat <<EOD
-puppetdb is installed, and a puppetdb module is available for configuration,
-but puppetdb is not currently in use.
-
-See http://puppetlabs.com/blog/module-of-the-week-puppetlabs-puppetdb/ for
-further configuration instructions.
-EOD
