@@ -104,7 +104,7 @@ function create_larger_manifest()
 {
     # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
     cat >> /etc/puppet/environments/dev/manifests/site-dev.pp <<EOF
-node ${FQDN} {
+node "${FQDN}" {
     class { 'puppetdb::master::config':
         puppetdb_server     => \$fqdn,
         puppet_service_name => 'apache2',
@@ -113,7 +113,7 @@ node ${FQDN} {
         listen_addresses => '127.0.0.1',
     }
     class { 'puppetdb::server':
-        database_host => '127.0.0.1,
+        database_host => '127.0.0.1',
     }
 }
 EOF
