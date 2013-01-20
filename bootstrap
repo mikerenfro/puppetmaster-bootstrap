@@ -3,7 +3,6 @@ DEBIAN_RELEASE="squeeze"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
-  pwgen
   xemacs21
 "
 PUPPET_PACKAGES="
@@ -93,9 +92,15 @@ function test_puppet_client()
     puppet agent -vt
 }
 
-function test_puppet_client_quietly()
+function configure_puppetdb_via_puppet()
 {
-    puppet agent -vt >& /dev/null
+    MAX_RUNS=4
+    echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
+    for i in `seq 1 ${MAX_RUNS}`; do
+        echo -ne "${i} "
+        puppet agent -vt >& /dev/null
+    done
+    echo
 }
 
 function install_puppetdb()
@@ -146,10 +151,7 @@ FUNCTION_LIST="
     install_puppetdb
     create_larger_manifest
     test_puppet_client
-    test_puppet_client_quietly
-    test_puppet_client_quietly
-    test_puppet_client_quietly
-    test_puppet_client_quietly
+    configure_puppetdb_via_puppet
     verify_puppetdb_works
     "
 # FUNCTION_LIST="$*"
