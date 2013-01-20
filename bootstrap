@@ -149,6 +149,7 @@ FUNCTION_LIST="
     test_puppet_client_quietly
     test_puppet_client_quietly
     test_puppet_client_quietly
+    test_puppet_client_quietly
     verify_puppetdb_works
     "
 # FUNCTION_LIST="$*"
