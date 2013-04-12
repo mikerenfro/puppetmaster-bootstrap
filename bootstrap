@@ -48,7 +48,6 @@ function install_puppet()
 
 function configure_puppetmaster()
 {
-    # mkdir /etc/puppet/plugins
     rm -r /etc/puppet/manifests /etc/puppet/modules /etc/puppet/templates
     # Create puppet.conf, including storeconfigs support
     cp puppet-generic.conf /etc/puppet/puppet.conf
