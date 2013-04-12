@@ -48,7 +48,8 @@ function install_puppet()
 
 function configure_puppetmaster()
 {
-    mkdir /etc/puppet/plugins
+    # mkdir /etc/puppet/plugins
+    rm -r /etc/puppet/plugins /etc/puppet/manifests /etc/puppet/modules /etc/puppet/templates
     # Create puppet.conf, including storeconfigs support
     cp puppet-generic.conf /etc/puppet/puppet.conf
     reformat_conf_files
@@ -89,25 +90,16 @@ function create_minimal_manifest()
 
 function test_puppet_client()
 {
-    puppet agent -vt
-}
-
-function configure_puppetdb_via_puppet()
-{
-    MAX_RUNS=4
-    echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
-    for i in `seq 1 ${MAX_RUNS}`; do
-        echo -ne "${i} "
-        puppet agent -vt >& /dev/null
-    done
-    echo
+    puppet agent -t
 }
 
 function install_puppetdb()
 {
     # Install puppetdb packages and modules
     # Ref: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-puppetdb/
-    puppet module install puppetlabs/puppetdb
+    puppet module install puppetlabs/puppetdb \
+        --environment dev \
+        --modulepath /etc/puppet/environments/dev/modules
 }
 
 function create_larger_manifest()
@@ -128,6 +120,17 @@ node "${FQDN}" {
     }
 }
 EOF
+}
+
+function configure_puppetdb_via_puppet()
+{
+    MAX_RUNS=4
+    echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
+    for i in `seq 1 ${MAX_RUNS}`; do
+        echo -ne "${i} "
+        puppet agent -t >& /dev/null
+    done
+    echo
 }
 
 function verify_puppetdb_works()
