@@ -124,7 +124,7 @@ EOF
 
 function configure_puppetdb_via_puppet()
 {
-    MAX_RUNS=4
+    MAX_RUNS=5
     echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
     for i in `seq 1 ${MAX_RUNS}`; do
         echo -ne "${i} "
