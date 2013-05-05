@@ -10,7 +10,8 @@ make it easier to merge code changes among dev, testing, and production
 environments as appropriate.
 
 To keep this structure intact, any calls to `puppet module install`
-need to have additional arguments of `--environment ${env} --modulepath /etc/puppet/environments/${env}/modules`,
+need to have additional arguments of
+`--environment ${env} --modulepath /etc/puppet/environments/${env}/modules`,
 replacing `${env}` with the actual environment name.
 
 Installation:
