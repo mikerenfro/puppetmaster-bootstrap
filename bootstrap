@@ -1,14 +1,16 @@
 #!/bin/bash
-DEBIAN_RELEASE="squeeze"
+DEBIAN_RELEASE="wheezy"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
-  xemacs21
+  emacs23-nox
+  vim-nox
 "
 PUPPET_PACKAGES="
   puppet
   puppet-el
   puppetmaster-passenger
+  vim-puppet 
 "
 
 APT_OPTIONS='-qq -y'
