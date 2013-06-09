@@ -80,13 +80,13 @@ function create_minimal_manifest()
     for env in production dev; do
         mkdir -p /etc/puppet/environments/${env}/manifests
         if [ ! -f /etc/puppet/environments/${env}/manifests/site.pp ]; then
-        echo "node default { notify{\"It works (in ${env} environment)!\":} }" \
+        echo "node default { notify{\'It works (in ${env} environment)!\':} }" \
             > /etc/puppet/environments/${env}/manifests/site.pp
         fi
     done
     mkdir -p /etc/puppet/manifests
     if [ ! -f /etc/puppet/manifests/unknown_environment.pp ]; then
-        echo "node default {notify{\"This host is not attached to an environment.\":} }" \
+        echo "node default {notify{\'This host is not attached to an environment.\':} }" \
             > /etc/puppet/manifests/unknown_environment.pp
     fi
 }
@@ -110,7 +110,7 @@ function create_larger_manifest()
     # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
     echo "Creating single-node puppetmaster/puppetdb/postgresql configuration"
     cat >> /etc/puppet/environments/dev/manifests/site.pp <<EOF
-node "${FQDN}" {
+node '${FQDN}' {
   class { 'puppetdb::master::config':
     puppetdb_server     => \$fqdn,
     puppet_service_name => 'apache2',
