@@ -1,14 +1,16 @@
 #!/bin/bash
-DEBIAN_RELEASE="squeeze"
+DEBIAN_RELEASE="wheezy"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
-  xemacs21
+  emacs23-nox
+  vim-nox
 "
 PUPPET_PACKAGES="
   puppet
   puppet-el
   puppetmaster-passenger
+  vim-puppet 
 "
 
 APT_OPTIONS='-qq -y'
@@ -25,11 +27,8 @@ function add_backports_repository()
 function add_puppet_repository()
 {
     # Add puppet repository for later puppet releases
-    grep -q ${PUPPET_REPO} /etc/apt/sources.list || \
-        echo "deb ${PUPPET_REPO} ${DEBIAN_RELEASE} main" \
-        >> /etc/apt/sources.list
-    wget -O puppet_repo.gpg ${PUPPET_REPO}/pubkey.gpg
-    apt-key add puppet_repo.gpg
+    wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
+    dpkg -i puppetlabs-release-wheezy.deb
     apt-get -q update > /dev/null
 }
 
@@ -76,13 +75,13 @@ function create_minimal_manifest()
     for env in production dev; do
         mkdir -p /etc/puppet/environments/${env}/manifests
         if [ ! -f /etc/puppet/environments/${env}/manifests/site.pp ]; then
-        echo "node default { notify{\"It works (in ${env} environment)!\":} }" \
+        echo "node default { notify{'It works (in ${env} environment)!':} }" \
             > /etc/puppet/environments/${env}/manifests/site.pp
         fi
     done
     mkdir -p /etc/puppet/manifests
     if [ ! -f /etc/puppet/manifests/unknown_environment.pp ]; then
-        echo "node default {notify{\"This host is not attached to an environment.\":} }" \
+        echo "node default {notify{'This host is not attached to an environment.':} }" \
             > /etc/puppet/manifests/unknown_environment.pp
     fi
 }
@@ -106,17 +105,17 @@ function create_larger_manifest()
     # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
     echo "Creating single-node puppetmaster/puppetdb/postgresql configuration"
     cat >> /etc/puppet/environments/dev/manifests/site.pp <<EOF
-node "${FQDN}" {
-    class { 'puppetdb::master::config':
-        puppetdb_server     => \$fqdn,
-        puppet_service_name => 'apache2',
-    }
-    class { 'puppetdb::database::postgresql':
-        listen_addresses => '127.0.0.1',
-    }
-    class { 'puppetdb::server':
-        database_host => '127.0.0.1',
-    }
+node '${FQDN}' {
+  class { 'puppetdb::master::config':
+    puppetdb_server     => \$fqdn,
+    puppet_service_name => 'apache2',
+  }
+  class { 'puppetdb::database::postgresql':
+    listen_addresses => '127.0.0.1',
+  }
+  class { 'puppetdb::server':
+    database_host => '127.0.0.1',
+  }
 }
 EOF
 }
