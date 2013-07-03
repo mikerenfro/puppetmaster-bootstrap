@@ -27,12 +27,7 @@ function add_backports_repository()
 function add_puppet_repository()
 {
     # Add puppet repository for later puppet releases
-    # grep -q ${PUPPET_REPO} /etc/apt/sources.list || \
-    #     echo "deb ${PUPPET_REPO} ${DEBIAN_RELEASE} main" \
-    #     >> /etc/apt/sources.list
-    # wget -O puppet_repo.gpg ${PUPPET_REPO}/pubkey.gpg
-    # apt-key add puppet_repo.gpg
-    wget http://apt.puppetlabs.com/puppetlabs-release-wheezy.deb
+    wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
     dpkg -i puppetlabs-release-wheezy.deb
     apt-get -q update > /dev/null
 }
