@@ -28,7 +28,7 @@ function add_puppet_repository()
 {
     # Add puppet repository for later puppet releases
     wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
-    dpkg -i puppetlabs-release-wheezy.deb
+    dpkg -i puppetlabs-release-${DEBIAN_RELEASE}.deb
     apt-get -q update > /dev/null
 }
 
