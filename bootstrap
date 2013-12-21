@@ -87,7 +87,7 @@ function install_puppetdb()
     # Install puppetdb packages and modules
     # Ref: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-puppetdb/
     puppet module install puppetlabs/puppetdb \
-        --environment dev \
+        --environment dev
 }
 
 function create_larger_manifest()
