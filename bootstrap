@@ -18,6 +18,7 @@ APT_OPTIONS='-qq -y'
 function add_backports_repository()
 {
     # Add backports for nginx and other packages if needed
+    DEBIAN_RELEASE=`lsb_release -cs`
     grep -q ${BACKPORTS_REPO} /etc/apt/sources.list || \
         echo "deb ${BACKPORTS_REPO} ${DEBIAN_RELEASE}-backports main" \
         >> /etc/apt/sources.list
@@ -26,7 +27,6 @@ function add_backports_repository()
 
 function add_puppet_repository()
 {
-    DEBIAN_RELEASE=`lsb_release -cs`
     # Add puppet repository for later puppet releases
     wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
     dpkg -i puppetlabs-release-${DEBIAN_RELEASE}.deb
