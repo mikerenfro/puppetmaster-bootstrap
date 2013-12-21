@@ -1,5 +1,4 @@
 #!/bin/bash
-BACKPORTS_REPO="http://backports.debian.org/debian"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   lsb-release
@@ -15,18 +14,9 @@ PUPPET_PACKAGES="
 
 APT_OPTIONS='-qq -y'
 
-function add_backports_repository()
-{
-    # Add backports for nginx and other packages if needed
-    DEBIAN_RELEASE=`lsb_release -cs`
-    grep -q ${BACKPORTS_REPO} /etc/apt/sources.list || \
-        echo "deb ${BACKPORTS_REPO} ${DEBIAN_RELEASE}-backports main" \
-        >> /etc/apt/sources.list
-    apt-get -q update > /dev/null
-}
-
 function add_puppet_repository()
 {
+    DEBIAN_RELEASE=`lsb_release -cs`
     # Add puppet repository for later puppet releases
     wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
     dpkg -i puppetlabs-release-${DEBIAN_RELEASE}.deb
@@ -143,7 +133,6 @@ FQDN=`hostname --fqdn`
 cd ${BASEDIR}
 FUNCTION_LIST="
     install_dependencies
-    add_backports_repository
     add_puppet_repository
     install_puppet
     configure_puppetmaster
