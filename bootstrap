@@ -62,7 +62,7 @@ function reformat_conf_files()
             s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
         /etc/puppet/*.conf
     chmod 640 /etc/puppet/*.conf
-    chown root:puppet /etc/puppet/*.conf    
+    chown root:puppet /etc/puppet/*.conf
 }
 
 function restart_apache()
