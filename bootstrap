@@ -101,7 +101,7 @@ node '${FQDN}' {
     puppet_service_name => 'apache2',
   }
   class { 'puppetdb::database::postgresql':
-    listen_addresses => '127.0.0.1',
+    listen_addresses => '\'127.0.0.1\'',
   }
   class { 'puppetdb::server':
     database_host => '127.0.0.1',
