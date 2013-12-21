@@ -2,7 +2,7 @@
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
-  lsb_release
+  lsb-release
   emacs23-nox
   vim-nox
 "
@@ -10,7 +10,7 @@ PUPPET_PACKAGES="
   puppet
   puppet-el
   puppetmaster-passenger
-  vim-puppet 
+  vim-puppet
 "
 
 APT_OPTIONS='-qq -y'
@@ -142,9 +142,9 @@ FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
 FUNCTION_LIST="
+    install_dependencies
     add_backports_repository
     add_puppet_repository
-    install_dependencies
     install_puppet
     configure_puppetmaster
     restart_apache
