@@ -1,5 +1,5 @@
 #!/bin/bash
-BACKPORTS_REPO="http://backports.debian.org/debian-backports"
+BACKPORTS_REPO="http://backports.debian.org/debian"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
   lsb-release
