@@ -1,8 +1,8 @@
 #!/bin/bash
-DEBIAN_RELEASE="wheezy"
 BACKPORTS_REPO="http://backports.debian.org/debian-backports"
 PUPPET_REPO="http://apt.puppetlabs.com"
 OTHER_DEPENDS="
+  lsb_release
   emacs23-nox
   vim-nox
 "
@@ -26,6 +26,7 @@ function add_backports_repository()
 
 function add_puppet_repository()
 {
+    DEBIAN_RELEASE=`lsb_release -cs`
     # Add puppet repository for later puppet releases
     wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
     dpkg -i puppetlabs-release-${DEBIAN_RELEASE}.deb
