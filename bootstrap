@@ -97,7 +97,7 @@ function create_larger_manifest()
     cat >> /etc/puppet/environments/dev/manifests/site.pp <<EOF
 node '${FQDN}' {
   class { 'puppetdb':
-    listen_addresses => '127.0.0.1',
+    listen_address => '127.0.0.1',
   }
 }
 EOF
