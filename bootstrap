@@ -133,9 +133,9 @@ FUNCTION_LIST="
     test_puppet_client
     install_puppetdb
     create_larger_manifest
-    test_puppet_client
+    restart_apache
     configure_puppetdb_via_puppet
-    verify_puppetdb_works
+    test_puppet_client
     "
 # FUNCTION_LIST="$*"
 for name in ${FUNCTION_LIST}; do
