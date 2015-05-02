@@ -6,6 +6,8 @@
 
 if [ -n "${ID}" -a -f functions.${ID} ]; then
   . functions.${ID}
+elif [ -n "${ID_LIKE} -a -f functions.${ID_LIKE} ]; then
+  . functions.${ID_LIKE}
 else
   echo "Error: no OS-specific functions for this system, exiting."
   exit 1
