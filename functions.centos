@@ -10,6 +10,7 @@ PUPPET_PACKAGES="
   puppetserver
   httpd-devel
   mod_ssl
+  ruby
   ruby-devel
   rubygems
 "
@@ -30,6 +31,8 @@ function install_puppet()
 {
     # Install puppet packages
     yum ${YUM_OPTIONS} install ${PUPPET_PACKAGES}
+    gem install rack passenger
+    passenger-install-apache2-module
 }
 
 function restart_apache()
