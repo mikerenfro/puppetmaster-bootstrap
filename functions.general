@@ -4,6 +4,7 @@ function configure_puppetmaster()
         if [ -d /etc/puppet/${d} ]; then
             rm -rf /etc/puppet/${d}
         fi
+    done
     # Create puppet.conf, including storeconfigs support
     cp puppet-generic.conf /etc/puppet/puppet.conf
     reformat_conf_files
