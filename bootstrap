@@ -1,129 +1,15 @@
 #!/bin/bash
-PUPPET_REPO="http://apt.puppetlabs.com"
-OTHER_DEPENDS="
-  lsb-release
-  emacs23-nox
-  vim-nox
-"
-PUPPET_PACKAGES="
-  puppet
-  puppet-el
-  puppetmaster-passenger
-  vim-puppet
-"
 
-APT_OPTIONS='-qq -y'
+# Load up OS-specific settings
+. /etc/os-release
+. functions.general
 
-function add_puppet_repository()
-{
-    DEBIAN_RELEASE=`lsb_release -cs`
-    # Add puppet repository for later puppet releases
-    wget http://apt.puppetlabs.com/puppetlabs-release-${DEBIAN_RELEASE}.deb
-    dpkg -i puppetlabs-release-${DEBIAN_RELEASE}.deb
-    apt-get -q update > /dev/null
-}
-
-function install_dependencies()
-{
-    # Install required packages interactively, so postgresql can
-    # prompt for a root password
-    apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
-}
-
-function install_puppet()
-{
-    # Install puppet packages
-    apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
-}
-
-function configure_puppetmaster()
-{
-    rm -r /etc/puppet/manifests /etc/puppet/modules /etc/puppet/templates
-    # Create puppet.conf, including storeconfigs support
-    cp puppet-generic.conf /etc/puppet/puppet.conf
-    reformat_conf_files
-}
-
-function reformat_conf_files()
-{
-    # Global search and replace tags from conf files in /etc/puppet
-    perl -pi.bak \
-        -e "s/__FQDN__/${FQDN}/g;
-            s/__PASSWORD__/${PUPPET_POSTGRESQL_PASSWORD}/g" \
-        /etc/puppet/*.conf
-    chmod 640 /etc/puppet/*.conf
-    chown root:puppet /etc/puppet/*.conf
-}
-
-function restart_apache()
-{
-    /etc/init.d/apache2 restart
-}
-
-function create_minimal_manifest()
-{
-    # Finishing up minimal puppet manifests
-    for env in production dev; do
-        mkdir -p /etc/puppet/environments/${env}/manifests
-        if [ ! -f /etc/puppet/environments/${env}/manifests/site.pp ]; then
-        echo "node default { notify{'It works (in ${env} environment)!':} }" \
-            > /etc/puppet/environments/${env}/manifests/site.pp
-        fi
-    done
-    mkdir -p /etc/puppet/manifests
-    if [ ! -f /etc/puppet/manifests/unknown_environment.pp ]; then
-        echo "node default {notify{'This host is not attached to an environment.':} }" \
-            > /etc/puppet/manifests/unknown_environment.pp
-    fi
-}
-
-function test_puppet_client()
-{
-    puppet agent -t
-}
-
-function install_puppetdb()
-{
-    # Install puppetdb packages and modules
-    # Ref: http://puppetlabs.com/blog/module-of-the-week-puppetlabs-puppetdb/
-    puppet module install puppetlabs/puppetdb \
-        --environment dev
-}
-
-function create_larger_manifest()
-{
-    # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
-    echo "Creating single-node puppetmaster/puppetdb/postgresql configuration"
-    cat >> /etc/puppet/environments/dev/manifests/site.pp <<EOF
-node '${FQDN}' {
-  class { 'puppetdb':
-    listen_address => '127.0.0.1',
-  }
-  class { 'puppetdb::master::config':
-    puppet_service_name => 'apache2',
-  }
-}
-EOF
-}
-
-function configure_puppetdb_via_puppet()
-{
-    MAX_RUNS=5
-    echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
-    for i in `seq 1 ${MAX_RUNS}`; do
-        echo -ne "${i} "
-        puppet agent -t >& /dev/null
-    done
-    echo
-}
-
-function verify_puppetdb_works()
-{
-    grep "replace.*${FQDN}" /var/log/puppetdb/puppetdb.log && echo Puppetdb works!
-}
-
-BASEDIR=`dirname $0`
-FQDN=`hostname --fqdn`
+if [ -n "${ID}" -a -f functions.${ID} ]; then
+  . functions.${ID}
+else
+  echo "Error: no OS-specific functions for this system, exiting."
+  exit 1
+fi
 
 cd ${BASEDIR}
 FUNCTION_LIST="
