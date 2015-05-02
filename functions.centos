@@ -8,6 +8,10 @@ YUM_OPTIONS='-q -y'
 PUPPET_PACKAGES="
   puppet
   puppetserver
+  httpd-devel
+  mod_ssl
+  ruby-devel
+  rubygems
 "
 
 function install_dependencies()
