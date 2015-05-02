@@ -37,3 +37,5 @@ function restart_apache()
 {
     /etc/init.d/apache2 restart
 }
+
+FQDN=`hostname --fqdn`

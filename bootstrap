@@ -1,7 +1,6 @@
 #!/bin/bash
 
 BASEDIR=`dirname $0`
-FQDN=`hostname --fqdn`
 
 cd ${BASEDIR}
 

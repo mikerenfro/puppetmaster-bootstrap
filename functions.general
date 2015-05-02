@@ -1,6 +1,9 @@
 function configure_puppetmaster()
 {
-    rm -r /etc/puppet/manifests /etc/puppet/modules /etc/puppet/templates
+    for d in manifests modules templates; do
+        if [ -d /etc/puppet/${d} ]; then
+            rm -rf /etc/puppet/${d}
+        fi
     # Create puppet.conf, including storeconfigs support
     cp puppet-generic.conf /etc/puppet/puppet.conf
     reformat_conf_files
@@ -23,8 +26,8 @@ function create_minimal_manifest()
     for env in production dev; do
         mkdir -p /etc/puppet/environments/${env}/manifests
         if [ ! -f /etc/puppet/environments/${env}/manifests/site.pp ]; then
-        echo "node default { notify{'It works (in ${env} environment)!':} }" \
-            > /etc/puppet/environments/${env}/manifests/site.pp
+            echo "node default { notify{'It works (in ${env} environment)!':} }" \
+                > /etc/puppet/environments/${env}/manifests/site.pp
         fi
     done
     mkdir -p /etc/puppet/manifests
