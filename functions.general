@@ -78,6 +78,3 @@ function verify_puppetdb_works()
 {
     grep "replace.*${FQDN}" /var/log/puppetdb/puppetdb.log && echo Puppetdb works!
 }
-
-BASEDIR=`dirname $0`
-FQDN=`hostname --fqdn`

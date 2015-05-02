@@ -1,19 +1,27 @@
 #!/bin/bash
 
+BASEDIR=`dirname $0`
+FQDN=`hostname --fqdn`
+
+cd ${BASEDIR}
+
 # Load up OS-specific settings
 . /etc/os-release
 . functions.general
 
 if [ -n "${ID}" -a -f functions.${ID} ]; then
   . functions.${ID}
-elif [ -n "${ID_LIKE} -a -f functions.${ID_LIKE} ]; then
-  . functions.${ID_LIKE}
+elif [ -n "${ID_LIKE} ]; then
+  for ID in ${ID_LIKE}; do
+    if [ -f functions.${ID} ]; then
+      . functions.${ID}
+    fi
+  done
 else
   echo "Error: no OS-specific functions for this system, exiting."
   exit 1
 fi
 
-cd ${BASEDIR}
 FUNCTION_LIST="
     install_dependencies
     add_puppet_repository

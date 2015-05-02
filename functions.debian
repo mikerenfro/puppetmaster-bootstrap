@@ -15,8 +15,6 @@ PUPPET_PACKAGES="
 
 function install_dependencies()
 {
-    # Install required packages interactively, so postgresql can
-    # prompt for a root password
     apt-get ${APT_OPTIONS} install ${OTHER_DEPENDS}
 }
 
