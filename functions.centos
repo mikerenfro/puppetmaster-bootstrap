@@ -14,6 +14,11 @@ PUPPET_PACKAGES="
   ruby-devel
   rubygems
   gcc
+  gcc-c++
+  zlib-devel
+  openssl-devel
+  curl-devel
+  
 "
 
 function install_dependencies()
