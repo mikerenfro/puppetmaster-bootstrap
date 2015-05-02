@@ -13,6 +13,7 @@ PUPPET_PACKAGES="
   ruby
   ruby-devel
   rubygems
+  gcc
 "
 
 function install_dependencies()
