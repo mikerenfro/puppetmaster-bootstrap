@@ -11,7 +11,7 @@ cd ${BASEDIR}
 
 if [ -n "${ID}" -a -f functions.${ID} ]; then
   . functions.${ID}
-elif [ -n "${ID_LIKE} ]; then
+elif [ -n "${ID_LIKE}" ]; then
   for ID in ${ID_LIKE}; do
     if [ -f functions.${ID} ]; then
       . functions.${ID}
