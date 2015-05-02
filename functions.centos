@@ -1,0 +1,34 @@
+PUPPET_REPO="http://yum.puppetlabs.com"
+OTHER_DEPENDS="
+  emacs-nox
+  vim-enhanced
+"
+YUM_OPTIONS=''
+
+PUPPET_PACKAGES="
+  puppet
+  puppet-server
+"
+
+function install_dependencies()
+{
+    yum ${YUM_OPTIONS} install ${OTHER_DEPENDS}
+}
+
+function add_puppet_repository()
+{
+    # Add puppet repository for later puppet releases
+    rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-${VERSION_ID}.noarch.rpm
+    yum check-update
+}
+
+function install_puppet()
+{
+    # Install puppet packages
+    yum ${YUM_OPTIONS} install ${PUPPET_PACKAGES}
+}
+
+function restart_apache()
+{
+    /etc/init.d/apache2 restart
+}
