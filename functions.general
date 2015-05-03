@@ -82,3 +82,8 @@ function verify_puppetdb_works()
 {
     grep "replace.*${FQDN}" /var/log/puppetdb/puppetdb.log && echo Puppetdb works!
 }
+
+function restart_apache()
+{
+    service ${APACHE_NAME} restart
+}

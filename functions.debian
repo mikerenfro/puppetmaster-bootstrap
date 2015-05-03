@@ -33,10 +33,5 @@ function install_puppet()
     apt-get ${APT_OPTIONS} --install-recommends install ${PUPPET_PACKAGES}
 }
 
-function restart_apache()
-{
-    /etc/init.d/apache2 restart
-}
-
 FQDN=`hostname --fqdn`
 APACHE_NAME='apache2'

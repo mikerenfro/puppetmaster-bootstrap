@@ -42,11 +42,13 @@ function install_puppet()
     ( cmdpid=$BASHPID; (sleep 30; kill $cmdpid) & exec puppet master \
       --verbose --no-daemonize )
     echo "Installing rack and passenger:"
-    gem install rack passenger
+    gem install rack passenger -q
     pmodulepath=/usr/local/share/gems/gems/passenger-*
     pushd $pmodulepath >& /dev/null && pmodulepath=`pwd` && popd >& /dev/null
     # Configure Apache for running passenger on port 8140
-    passenger-install-apache2-module -a
+    echo "Building passenger apache module:"
+    passenger-install-apache2-module -a >& /dev/null
+    echo "Configuring Apache vhost:"
     cp /usr/share/puppet/ext/rack/example-passenger-vhost.conf \
       /etc/httpd/conf.d/puppetmaster.conf
     perl -pi.bak -e "s#squigley.namespace.at#${FQDN}#g" \
@@ -67,11 +69,6 @@ function install_puppet()
       /usr/share/puppet/rack/puppetmasterd/tmp
     cp /usr/share/puppet/ext/rack/config.ru /usr/share/puppet/rack/puppetmasterd/
     chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru
-}
-
-function restart_apache()
-{
-    service httpd restart
 }
 
 FQDN=`hostname`
