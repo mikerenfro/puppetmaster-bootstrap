@@ -40,7 +40,7 @@ function install_puppet()
     # Start puppetmaster to generate and sign keys, then kill it and continue
     ( cmdpid=$BASHPID; (sleep 30; kill $cmdpid) & exec puppet master --verbose --no-daemonize )
     # If DNS is broken and we can't resolve ourselves, add a host entry
-    ping -c1 -i1 $FQDN
+    ping -c1 -i1 $FQDN >& /dev/null
     if [ $? -eq 2 ]; then
         echo "Can't resolve my own hostname, adding host file entry"
         echo "host { \"\$fqdn\": ip => \"\$ipaddress\", }" > /tmp/hostname-fix.pp
@@ -62,7 +62,7 @@ function install_puppet()
     mkdir -p /usr/share/puppet/rack/puppetmasterd
     mkdir /usr/share/puppet/rack/puppetmasterd/public /usr/share/puppet/rack/puppetmasterd/tmp
     cp /usr/share/puppet/ext/rack/config.ru /usr/share/puppet/rack/puppetmasterd/
-    chown puppet:puppet /usr/share/puppet/rack/puppetmaster/config.ru    
+    chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru    
 }
 
 function restart_apache()
