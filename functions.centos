@@ -43,22 +43,24 @@ function install_puppet()
     ping -c1 -i1 $FQDN
     if [ $? -eq 2 ]; then
         echo "Can't resolve my own hostname, adding host file entry"
-        echo "host { \"${FQDN}\": ip => \"\$ipaddress\", }" > /tmp/hostname-fix.pp
+        echo "host { \"\$fqdn\": ip => \"\$ipaddress\", }" > /tmp/hostname-fix.pp
         puppet apply /tmp/hostname-fix.pp
     fi
     echo "Installing rack and passenger:"
     gem install rack passenger
-    passenger-install-apache2-module
     # Configure Apache for running passenger on port 8140
     ln -s /var/lib/puppet/ssl /etc/puppet/
     cp /usr/share/puppet/ext/rack/example-passenger-vhost.conf /etc/httpd/conf.d/puppetmaster.conf
-    perl -pi.bak -e "s#squigley.namespace.at#${FQDN}#g" /etc/httpd/conf.d/puppetmaster.conf
+    facterfqdn=`facter fqdn`
+    perl -pi.bak -e "s#squigley.namespace.at#${facterfqdn}#g" /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e "s#/etc/puppet/ssl#/var/lib/puppet/ssl#g" /etc/httpd/conf.d/puppetmaster.conf
     pmodulepath=/usr/local/share/gems/gems/passenger-*
     pushd $pmodulepath >& /dev/null && pmodulepath=`pwd` && popd >& /dev/null
     perl -pi.bak -e "s#Listen 8140#LoadModule passenger_module ${pmodulepath}/buildout/apache2/mod_passenger.so\nPassengerRoot ${pmodulepath}\nPassengerRuby /usr/bin/ruby\nListen 8140#g" /etc/httpd/conf.d/puppetmaster.conf
     mkdir -p /etc/puppet/rack/public /etc/puppet/rack/tmp
     cp /usr/share/puppet/ext/rack/config.ru /etc/puppet/rack
     chown puppet:puppet /etc/puppet/rack/config.ru    
+    passenger-install-apache2-module -a
 }
 
 function restart_apache()
