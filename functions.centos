@@ -55,12 +55,14 @@ function install_puppet()
     cp /usr/share/puppet/ext/rack/example-passenger-vhost.conf /etc/httpd/conf.d/puppetmaster.conf
     facterfqdn=`facter fqdn`
     perl -pi.bak -e "s#squigley.namespace.at#${facterfqdn}#g" /etc/httpd/conf.d/puppetmaster.conf
-    perl -pi.bak -e "s/RackAutoDetect/#RackAutoDetect#g;s/RailsAutoDetect/#RailsAutoDetect#g;" /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e "s/RackAutoDetect/#RackAutoDetect#g;s/RailsAutoDetect/#RailsAutoDetect/g" /etc/httpd/conf.d/puppetmaster.conf
     perl -pi.bak -e "s#/etc/puppet/ssl#/var/lib/puppet/ssl#g" /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e "s#/etc/puppet/rack/#/usr/share/puppet/rack/puppetmasterd/#g" /etc/httpd/conf.d/puppetmaster.conf
     perl -pi.bak -e "s#Listen 8140#LoadModule passenger_module ${pmodulepath}/buildout/apache2/mod_passenger.so\nPassengerRoot ${pmodulepath}\nPassengerRuby /usr/bin/ruby\nListen 8140#g" /etc/httpd/conf.d/puppetmaster.conf
-    mkdir -p /etc/puppet/rack/public /etc/puppet/rack/tmp
-    cp /usr/share/puppet/ext/rack/config.ru /etc/puppet/rack
-    chown puppet:puppet /etc/puppet/rack/config.ru    
+    mkdir -p /usr/share/puppet/rack/puppetmasterd
+    mkdir /usr/share/puppet/rack/puppetmasterd/public /usr/share/puppet/rack/puppetmasterd/tmp
+    cp /usr/share/puppet/ext/rack/config.ru /usr/share/puppet/rack/puppetmasterd/
+    chown puppet:puppet /usr/share/puppet/rack/puppetmaster/config.ru    
 }
 
 function restart_apache()
