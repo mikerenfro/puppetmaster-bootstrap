@@ -7,7 +7,7 @@ YUM_OPTIONS='-q -y'
 
 PUPPET_PACKAGES="
   puppet
-  puppetserver
+  puppet-server
   httpd-devel
   mod_ssl
   ruby
@@ -37,6 +37,8 @@ function install_puppet()
 {
     # Install puppet packages
     yum ${YUM_OPTIONS} install ${PUPPET_PACKAGES}
+    # Start puppetmaster to generate and sign keys, then kill it and continue
+    ( cmdpid=$BASHPID; (sleep 30; kill $cmdpid) & exec puppet master --verbose --no-daemonize )
     gem install rack passenger
     passenger-install-apache2-module
 }
