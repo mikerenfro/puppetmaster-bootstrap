@@ -39,3 +39,4 @@ function restart_apache()
 }
 
 FQDN=`hostname --fqdn`
+APACHE_NAME='apache2'

@@ -75,3 +75,4 @@ function restart_apache()
 }
 
 FQDN=`hostname`
+APACHE_NAME='httpd'
