@@ -43,7 +43,7 @@ function install_puppet()
     ping -c1 -i1 $FQDN
     if [ $? -eq 2 ]; then
         echo "Can't resolve my own hostname, adding host file entry"
-        echo "host { \"${FQDN}\": ip => \"\$ipaddress\", }' > /tmp/hostname-fix.pp
+        echo "host { \"${FQDN}\": ip => \"\$ipaddress\", }" > /tmp/hostname-fix.pp
         puppet apply /tmp/hostname-fix.pp
     fi
     echo "Installing rack and passenger:"
