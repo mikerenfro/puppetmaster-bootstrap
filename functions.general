@@ -61,7 +61,7 @@ node '${FQDN}' {
     listen_address => '127.0.0.1',
   }
   class { 'puppetdb::master::config':
-    puppet_service_name => 'apache2',
+    puppet_service_name => '${APACHE_NAME}',
   }
 }
 EOF
