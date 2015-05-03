@@ -30,7 +30,7 @@ function add_puppet_repository()
 {
     # Add puppet repository for later puppet releases
     rpm --quiet -ivh ${PUPPET_REPO}/puppetlabs-release-el-${VERSION_ID}.noarch.rpm
-    yum ${YUM OPTIONS} check-update
+    yum ${YUM_OPTIONS} check-update
 }
 
 function install_puppet()
