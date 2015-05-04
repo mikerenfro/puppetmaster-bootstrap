@@ -17,8 +17,7 @@ PUPPET_PACKAGES="
   gcc-c++
   zlib-devel
   openssl-devel
-  curl-devel
-  
+  curl-devel 
 "
 
 function install_dependencies()
