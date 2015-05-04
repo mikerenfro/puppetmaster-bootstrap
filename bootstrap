@@ -8,14 +8,16 @@ cd ${BASEDIR}
 . /etc/os-release
 . functions.general
 
-if [ -n "${ID}" -a -f functions.${ID} ]; then
-  . functions.${ID}
-elif [ -n "${ID_LIKE}" ]; then
-  for ID in ${ID_LIKE}; do
-    if [ -f functions.${ID} ]; then
-      . functions.${ID}
+# Load functions for what we're family of systems we're from, if any
+if [ -n "${ID_LIKE}" ]; then
+  for IDL in ${ID_LIKE}; do
+    if [ -f functions.${IDL} ]; then
+      . functions.${IDL}
     fi
   done
+elif [ -n "${ID}" -a -f functions.${ID} ]; then
+  # Load functions for what system we literally are to override
+  . functions.${ID}
 else
   echo "Error: no OS-specific functions for this system, exiting."
   exit 1
