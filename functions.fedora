@@ -70,5 +70,49 @@ function install_puppet()
     chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru
 }
 
+function create_larger_manifest()
+{
+    if [ "${ID}" == "fedora" ]; then
+        echo "Fedora does not yet support puppetdb. Not modifying manifest."
+    else
+        # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
+        echo "Creating single-node puppetmaster/puppetdb/postgresql configuration"
+        cat >> /etc/puppet/environments/dev/manifests/site.pp <<EOF
+node '${FQDN}' {
+  class { 'puppetdb':
+    listen_address => '127.0.0.1',
+  }
+  class { 'puppetdb::master::config':
+    puppet_service_name => '${APACHE_NAME}',
+  }
+}
+EOF
+    fi
+}
+
+function configure_puppetdb_via_puppet()
+{
+    if [ "${ID}" == "fedora" ]; then
+        echo "Fedora does not yet support puppetdb. Not configuring puppetdb."
+    else
+        MAX_RUNS=5
+        echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
+        for i in `seq 1 ${MAX_RUNS}`; do
+            echo -ne "${i} "
+            puppet agent -t >& /dev/null
+        done
+        echo
+    fi
+}
+
+function verify_puppetdb_works()
+{
+    if [ "${ID}" == "fedora" ]; then
+        echo "Fedora does not yet support puppetdb. Not verifying puppetdb."
+    else
+        grep "replace.*${FQDN}" /var/log/puppetdb/puppetdb.log && echo Puppetdb works!
+    fi
+}
+
 FQDN=`hostname`
 APACHE_NAME='httpd'
