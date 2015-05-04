@@ -1,6 +1,106 @@
+PUPPET_REPO="https://yum.puppetlabs.com"
+OTHER_DEPENDS="
+  emacs-nox
+  vim-enhanced
+"
+YUM_OPTIONS='-q -y'
+
+PUPPET_PACKAGES="
+  puppet
+  puppet-server
+  httpd-devel
+  mod_ssl
+  ruby
+  ruby-devel
+  rubygems
+  gcc
+  gcc-c++
+  zlib-devel
+  openssl-devel
+  curl-devel 
+"
+
+function install_dependencies()
+{
+    yum ${YUM_OPTIONS} install ${OTHER_DEPENDS}
+}
+
 function add_puppet_repository()
 {
     # Add puppet repository for later puppet releases
     rpm --quiet -ivh ${PUPPET_REPO}/puppetlabs-release-el-${VERSION_ID}.noarch.rpm
     yum ${YUM_OPTIONS} check-update
 }
+
+function install_puppet()
+{
+    # Install puppet packages
+    yum ${YUM_OPTIONS} install ${PUPPET_PACKAGES}
+    # Start puppetmaster to generate and sign keys, then kill it and continue
+    echo "Starting puppetmaster for 30 seconds to generate keys:"
+    ( cmdpid=$BASHPID; (sleep 30; kill $cmdpid) & exec puppet master \
+      --verbose --no-daemonize )
+    echo "Installing rack and passenger gems:"
+    gem install rack passenger -q
+    pmodulepath=/usr/local/share/gems/gems/passenger-*
+    pushd $pmodulepath >& /dev/null && pmodulepath=`pwd` && popd >& /dev/null
+    # Configure Apache for running passenger on port 8140
+    echo "Building passenger apache module. This will take longer than rack and passenger gems:"
+    passenger-install-apache2-module -a >& /dev/null
+    echo "Configuring Apache vhost:"
+    cp /usr/share/puppet/ext/rack/example-passenger-vhost.conf \
+      /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e "s#squigley.namespace.at#${FQDN}#g" \
+      /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e \
+      "s/RackAutoDetect/#RackAutoDetect/g;s/RailsAutoDetect/#RailsAutoDetect/g" \
+      /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e "s#/etc/puppet/ssl#/var/lib/puppet/ssl#g" \
+      /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e \
+      "s#/etc/puppet/rack/#/usr/share/puppet/rack/puppetmasterd/#g" \
+      /etc/httpd/conf.d/puppetmaster.conf
+    perl -pi.bak -e \
+      "s#Listen 8140#LoadModule passenger_module ${pmodulepath}/buildout/apache2/mod_passenger.so\nPassengerRoot ${pmodulepath}\nPassengerRuby /usr/bin/ruby\nListen 8140#g" \
+      /etc/httpd/conf.d/puppetmaster.conf
+    mkdir -p /usr/share/puppet/rack/puppetmasterd
+    mkdir /usr/share/puppet/rack/puppetmasterd/public \
+      /usr/share/puppet/rack/puppetmasterd/tmp
+    cp /usr/share/puppet/ext/rack/config.ru /usr/share/puppet/rack/puppetmasterd/
+    chown puppet:puppet /usr/share/puppet/rack/puppetmasterd/config.ru
+}
+
+function create_larger_manifest()
+{
+    # Making puppet manifest for single-node puppetmaster/puppetdb/postgres
+    echo "Creating single-node puppetmaster/puppetdb/postgresql configuration"
+    cat >> /etc/puppet/environments/dev/manifests/site.pp <<EOF
+node '${FQDN}' {
+  class { 'puppetdb':
+    listen_address => '127.0.0.1',
+  }
+  class { 'puppetdb::master::config':
+    puppet_service_name => '${APACHE_NAME}',
+  }
+}
+EOF
+}
+
+function configure_puppetdb_via_puppet()
+{
+    MAX_RUNS=5
+    echo "Running puppet agent ${MAX_RUNS} times to configure all puppetdb items"
+    for i in `seq 1 ${MAX_RUNS}`; do
+        echo -ne "${i} "
+        puppet agent -t >& /dev/null
+    done
+    echo
+}
+
+function verify_puppetdb_works()
+{
+    grep "replace.*${FQDN}" /var/log/puppetdb/puppetdb.log && echo Puppetdb works!
+}
+
+FQDN=`hostname`
+APACHE_NAME='httpd'
